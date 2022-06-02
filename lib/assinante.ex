@@ -1,4 +1,10 @@
 defmodule Assinante do
+  @moduledoc """
+    Módulo de assinante para cadastro de clientes `prepagos` e `pospagos`
+
+    A função mais utilizada é a função `cadastrar/4`
+  """
+
   defstruct nome: nil, numero: nil, cpf: nil, plano: nil
 
   @assinantes %{:prepago => "pre.txt", :pospago => "pos.txt"}
@@ -16,6 +22,22 @@ defmodule Assinante do
   def assinantes_pospago(), do: read(:pospago)
   def assinantes(), do: read(:prepago) ++ read(:pospago)
 
+  @doc """
+  Função para cadastrar assinante prepago e pospagos
+
+  ## Parametros da função
+
+  - nome: parametro do nome do assinante
+  - numero: parametro do numero do assinante
+  - cpf: parametro do cpf do assinante
+  - plano: `(OPCIONAL)` -> parametro do plano do assinante. Caso não seja inserido o cliente será classificado como prepago automaticamente
+
+  ## Exemplo
+
+      iex> Assinante.cadastrar("Fabiano", "123", "123")
+      {:ok, "Assinante cadastrado com sucesso"}
+
+  """
   def cadastrar(nome, numero, cpf, plano \\ :prepago) do
     case buscar_assinante(numero) do
       nil ->
