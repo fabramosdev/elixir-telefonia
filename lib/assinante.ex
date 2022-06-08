@@ -30,20 +30,25 @@ defmodule Assinante do
   - nome: parametro do nome do assinante
   - numero: parametro do numero do assinante
   - cpf: parametro do cpf do assinante
-  - plano: `(OPCIONAL)` -> parametro do plano do assinante. Caso não seja inserido o cliente será classificado como prepago automaticamente
+  - plano: parametros definidos => `:prepago` ou `:pospago`
 
   ## Exemplo
 
-      iex> Assinante.cadastrar("Fabiano", "123", "123")
+      iex> Assinante.cadastrar("Fabiano", "123", "123", :prepago)
       {:ok, "Assinante cadastrado com sucesso"}
 
   """
-  def cadastrar(nome, numero, cpf, plano \\ :prepago) do
+  def cadastrar(nome, numero, cpf, :prepago), do: cadastrar(nome, numero, cpf, %Prepago{})
+  def cadastrar(nome, numero, cpf, :pospago), do: cadastrar(nome, numero, cpf, %Pospago{})
+
+  def cadastrar(nome, numero, cpf, plano) do
     case buscar_assinante(numero) do
       nil ->
-        (read(plano) ++ [%__MODULE__{nome: nome, numero: numero, cpf: cpf, plano: plano}])
+        assinante = %__MODULE__{nome: nome, numero: numero, cpf: cpf, plano: plano}
+
+        (read(pega_plano(assinante)) ++ [assinante])
         |> :erlang.term_to_binary()
-        |> write(plano)
+        |> write(pega_plano(assinante))
 
         {:ok, "Assinante cadastrado com sucesso"}
 
@@ -52,8 +57,27 @@ defmodule Assinante do
     end
   end
 
+  defp pega_plano(assinante) do
+    case assinante.plano.__struct__ == Prepago do
+      true -> :prepago
+      false -> :pospago
+    end
+  end
+
   defp write(lista_assinantes, plano) do
     File.write!(@assinantes[plano], lista_assinantes)
+  end
+
+  def deletar(numero) do
+    assinante = buscar_assinante(numero)
+
+    result_delete =
+      assinantes()
+      |> List.delete(assinante)
+      |> :erlang.term_to_binary()
+      |> write(assinante.plano)
+
+    {result_delete, "Assinante #{assinante.nome} deletado"}
   end
 
   def read(plano) do

@@ -14,14 +14,14 @@ defmodule AssinanteTest do
 
   describe "Testes responsáveis para cadastro de assinantes" do
     test "deve criar uma conta prepago" do
-      assert Assinante.cadastrar("Fabiano", "123", "123") ==
+      assert Assinante.cadastrar("Fabiano", "123", "123", :prepago) ==
                {:ok, "Assinante cadastrado com sucesso"}
     end
 
     test "deve retornar erro para assinante já cadastrado" do
-      Assinante.cadastrar("Fabiano", "123", "123")
+      Assinante.cadastrar("Fabiano", "123", "123", :prepago)
 
-      assert Assinante.cadastrar("Fabiano", "123", "123") ==
+      assert Assinante.cadastrar("Fabiano", "123", "123", :prepago) ==
                {:error, "Assinante com este número cadastrado"}
     end
   end
@@ -34,7 +34,7 @@ defmodule AssinanteTest do
                cpf: "123",
                nome: "Fabiano",
                numero: "123",
-               plano: :pospago
+               plano: %Pospago{value: nil}
              }
     end
 
@@ -45,8 +45,16 @@ defmodule AssinanteTest do
                cpf: "123",
                nome: "Fabiano",
                numero: "123",
-               plano: :prepago
+               plano: %Prepago{creditos: 10, recargas: []}
              }
+    end
+  end
+
+  describe "delete" do
+    test "deve deletar o assinante" do
+      Assinante.cadastrar("Fabiano", "123", "123", :prepago)
+      Assinante.cadastrar("Camila", "456", "456", :prepago)
+      assert Assinante.deletar("123") == {:ok, "Assinante Fabiano deletado"}
     end
   end
 end
